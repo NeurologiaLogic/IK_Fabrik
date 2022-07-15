@@ -17,8 +17,8 @@ import {
     update();
   });
 
-  const length = 10
-  const points = 3;
+  const length = 100;
+  const points = 5;
 
 
   class UserInput {
@@ -26,12 +26,12 @@ import {
       this.state = "drawing";
       this.hold = false;
       this.startingNode = new Set()
-    // this.endNodes = []~
+      // this.endNodes = []~
       this.endNodes = new Set()
     }
     checkInput() {
       // console.log(this.state)
-      canvas.onclick = (e)=>ikC.addTarget(e.offsetX, e.offsetY);
+      canvas.onclick = (e) => ikC.addTarget(e.offsetX, e.offsetY);
       canvas.onmousedown = (e) => {
         this.hold = true;
       }
@@ -69,16 +69,16 @@ import {
 
   let Mouse = new UserInput();
 
-  let ikC = new IK(300, 200, 3, 100)
+  let ikC = new IK(300, 200, points, length)
 
   function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     Mouse.checkInput();
+    ikC.draw(ctx)
     requestAnimationFrame(update);
   }
 
   function init() {
-    ikC.draw(ctx)
     update();
   }
   init()

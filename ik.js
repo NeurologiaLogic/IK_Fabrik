@@ -8,20 +8,16 @@ class IK {
       y: SPy
     }
     this.endPoint = {
-      x: 300,
-      y: 190
+      x: SPx*length*(points-1),
+      y: SPy*length*(points-1)
     }
-    this.tolerance = 0.01
+    this.tolerance = 0.00001
     this.points = points;
     this.length = length;
     this.pointsLoc = this._generateLocation(SPx, SPy, this.points, this.length);
 
   }
   draw(ctx) {
-    // if (this.endPoint.x - this.startPoint.x > 0 && this.endPoint.y - this.startPoint.y > 0) {
-      // console.log("unreachable")
-    //   return;
-    // }
     for (let i = this.pointsLoc.length - 1; i >= 0; i--) {
       ctx.beginPath();
       ctx.fillStyle = "white";
@@ -38,17 +34,14 @@ class IK {
         x: this.endPoint.x - this.pointsLoc[this.pointsLoc.length - 1].x,
         y: this.endPoint.y - this.pointsLoc[this.pointsLoc.length - 1].y
       }) > this.points * this.length) {
-      // console.log("unreachable")
+      console.log("unreachable")
     }
-    while (Vector.Magnitude({
+    else if (Vector.Magnitude({
         x: this.endPoint.x - this.pointsLoc[this.pointsLoc.length - 1].x,
         y: this.endPoint.y - this.pointsLoc[this.pointsLoc.length - 1].y
       }) > this.tolerance) {
-        console.log(Vector.Magnitude({
-          x: this.endPoint.x - this.pointsLoc[this.pointsLoc.length - 1].x,
-          y: this.endPoint.y - this.pointsLoc[this.pointsLoc.length - 1].y}))
-          // this.forward()
-      // this.backward()
+
+      this.backward(this.forward())
     }
   }
   addTarget(x, y) {
@@ -73,7 +66,11 @@ IK.prototype._generateLocation = (x, y, points, length) => {
 IK.prototype._getNewPoints = function (x0, y0, x1, y1) {
   let vector = this.length/Vector.Magnitude(Vector.vectorDir(x0, y0, x1, y1))
   // console.log("vector: :", vector)
-  // console.log("this is vector" + vector.x + " " + vector.y)
+  if(vector==0)
+    return Object.assign({}, {
+      x: x0,
+      y: y0
+    })
   return Object.assign({}, {
     x: (1 - vector) * x0 + vector * x1,
     y: (1 - vector) * y0 + vector * y1
@@ -83,17 +80,13 @@ IK.prototype._getNewPoints = function (x0, y0, x1, y1) {
 IK.prototype.forward = function () {
   // console.log("forward")
   let forwardPoints = []
-  this.pointsLoc[this.pointsLoc.length - 1] = this.endPoint
-  let end = this.pointsLoc[this.pointsLoc.length - 1]
-  forwardPoints.push(end)
-  for (let i = this.pointsLoc.length - 2; i >= 0; i--) {
-    let newVal = this._getNewPoints(this.pointsLoc[i].x, this.pointsLoc[i].y, end.x, end.y)
-    let newCalc = {
-      x: newVal.x,
-      y: newVal.y
-    }
-    forwardPoints.push(newCalc)
-    end = newCalc
+  let end = this.endPoint
+  // forwardPoints.push(end)
+  for (let i = this.pointsLoc.length - 1; i >= 0; i--) {
+    // this.pointsLoc[this.pointsLoc.length - 1] = end
+    let newVal = this._getNewPoints(end.x, end.y,this.pointsLoc[i].x, this.pointsLoc[i].y)
+    forwardPoints.push(newVal)
+    end = newVal
   }
   // console.log(forwardPoints)
   // console.log("end forward")
@@ -104,26 +97,16 @@ IK.prototype.backward = function (forwardPoints) {
   // console.log("backward")
   let newPoints = []
   forwardPoints = forwardPoints.slice().reverse()
-  let start = forwardPoints[0] = this.startPoint
-  newPoints.push(start)
-  for (let i = 1; i < forwardPoints.length; i++) {
+  let start = this.startPoint
+  for (let i = 0; i < forwardPoints.length; i++) {
     let newVal = this._getNewPoints(start.x, start.y, forwardPoints[i].x, forwardPoints[i].y)
-    let newCalc = {
-      x: newVal.x,
-      y: newVal.y
-    }
-    newPoints.push(newCalc)
-    // newPoints.push(newVal)
-    // console.log(`backward is : ${newVal.x} ${newVal.y}`)
-    start = newCalc
+    newPoints.push(newVal)
+    start = newVal
   }
-  // console.log(newPoints)
   // console.log("end backward")
   this.pointsLoc = newPoints
 }
 
-// let ikC = new IK(1, 1, 3, 5)
-// ikC.draw()
 export {
   IK
 };
